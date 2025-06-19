@@ -7,8 +7,10 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-// Initialize Supabase client
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Initialize Supabase client only if environment variables are available
+const supabase = SUPABASE_URL && SUPABASE_ANON_KEY 
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
 
 interface Message {
   id: string;
@@ -95,6 +97,18 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Check if environment variables are configured
+  const isConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+
+  // Log configuration status for debugging
+  useEffect(() => {
+    console.log('Environment check:', {
+      supabaseUrl: SUPABASE_URL ? 'Configured' : 'Missing',
+      supabaseKey: SUPABASE_ANON_KEY ? 'Configured' : 'Missing',
+      isConfigured
+    });
+  }, [isConfigured]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -105,6 +119,12 @@ export default function App() {
 
   const searchDatabase = async (query: string) => {
     console.log('🔍 searchDatabase called with:', query);
+    
+    // Check if Supabase client is available
+    if (!supabase) {
+      console.error('❌ Supabase client not initialized - missing environment variables');
+      return 'Supabase connection not configured. Please check your environment variables.';
+    }
     
     try {
       // Convert query to lowercase for better matching
@@ -620,22 +640,46 @@ export default function App() {
 
       {/* Success Message */}
       <div className="max-w-4xl mx-auto w-full px-6 py-6">
-        <div className="bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-700/50 rounded-xl p-6 shadow-lg">
+        <div className={`rounded-xl p-6 shadow-lg ${
+          isConfigured 
+            ? 'bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-700/50'
+            : 'bg-gradient-to-r from-red-900/50 to-orange-900/50 border border-red-700/50'
+        }`}>
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-green-800/50 rounded-full flex items-center justify-center">
-              <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              isConfigured ? 'bg-green-800/50' : 'bg-red-800/50'
+            }`}>
+              {isConfigured ? (
+                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-green-300">
-                Data Sources Configured
+              <h3 className={`text-sm font-semibold ${
+                isConfigured ? 'text-green-300' : 'text-red-300'
+              }`}>
+                {isConfigured ? 'Data Sources Configured' : 'Configuration Required'}
               </h3>
-              <p className="text-sm text-green-200 mt-1">
-                Your Supabase credentials are properly configured and working.
+              <p className={`text-sm mt-1 ${
+                isConfigured ? 'text-green-200' : 'text-red-200'
+              }`}>
+                {isConfigured 
+                  ? 'Your Supabase credentials are properly configured and working.'
+                  : 'Supabase environment variables are missing. Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.'
+                }
               </p>
-              <p className="text-sm text-green-200 mt-2">
-                <strong>Data Sources:</strong> This app uses your &ldquo;All_Variables&rdquo; table and Wikipedia for comprehensive information.
+              <p className={`text-sm mt-2 ${
+                isConfigured ? 'text-green-200' : 'text-red-200'
+              }`}>
+                <strong>Data Sources:</strong> {isConfigured 
+                  ? 'This app uses your &ldquo;All_Variables&rdquo; table and Wikipedia for comprehensive information.'
+                  : 'Wikipedia will still work, but Supabase data will not be available.'
+                }
               </p>
             </div>
           </div>
