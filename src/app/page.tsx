@@ -17,6 +17,34 @@ interface Message {
   timestamp: Date;
 }
 
+interface CountryData {
+  Country: string;
+  ISO: string;
+  Pop2023?: number;
+  DroughtRisk?: string;
+  DroughtCount?: number;
+  DroughtRiskFuture?: string;
+  ConflictRisk?: string;
+  Inform?: string;
+  MostFrequentDisaster?: string;
+  MostFrequentDisasterNumber?: number;
+  Poverty?: string;
+  Inequality?: string;
+}
+
+interface WikipediaResponse {
+  title: string;
+  extract: string;
+  source: string;
+}
+
+interface SupabaseError {
+  message: string;
+  details?: string;
+  hint?: string;
+  code?: string;
+}
+
 // Wikipedia API helper functions
 const searchWikipedia = async (query: string): Promise<string | null> => {
   try {
@@ -38,7 +66,7 @@ const searchWikipedia = async (query: string): Promise<string | null> => {
       return null;
     }
     
-    const data = await response.json();
+    const data: WikipediaResponse = await response.json();
     console.log('🔍 Wikipedia data received:', data);
     
     if (data.title && data.extract) {
@@ -104,7 +132,7 @@ export default function App() {
       };
       
       // Helper function to check if query is asking for a specific country
-      const findBestCountryMatch = (query: string, countries: any[]): any | null => {
+      const findBestCountryMatch = (query: string, countries: CountryData[]): CountryData | null => {
         const queryWords = query.split(/\s+/).filter(word => word.length > 2);
         
         // First, try exact matches
@@ -126,7 +154,7 @@ export default function App() {
         }
         
         // If no exact match, try fuzzy matching with high threshold
-        let bestMatch = null;
+        let bestMatch: CountryData | null = null;
         let bestScore = 0.8; // High threshold to avoid false matches
         
         for (const country of countries) {
@@ -164,7 +192,7 @@ export default function App() {
       // Get all countries to check against
       const { data: allCountries, error: countryError } = await supabase
         .from('All_Variables')
-        .select('Country, ISO');
+        .select('Country, ISO') as { data: Pick<CountryData, 'Country' | 'ISO'>[] | null; error: SupabaseError | null };
       
       if (!countryError && allCountries) {
         // Find the best country match
@@ -178,7 +206,7 @@ export default function App() {
             .from('All_Variables')
             .select('*')
             .eq('Country', foundCountry.Country)
-            .limit(1);
+            .limit(1) as { data: CountryData[] | null; error: SupabaseError | null };
           
           if (!error && data && data.length > 0) {
             const country = data[0];
@@ -232,7 +260,7 @@ export default function App() {
           .from('All_Variables')
           .select('*')
           .order('Pop2023', { ascending: false })
-          .limit(5);
+          .limit(5) as { data: CountryData[] | null; error: SupabaseError | null };
         
         if (error) {
           console.error('❌ Supabase error:', error);
@@ -257,7 +285,7 @@ export default function App() {
           .from('All_Variables')
           .select('*')
           .order('DroughtRisk', { ascending: false })
-          .limit(5);
+          .limit(5) as { data: CountryData[] | null; error: SupabaseError | null };
         
         if (error) {
           console.error('❌ Supabase error:', error);
@@ -284,7 +312,7 @@ export default function App() {
           .from('All_Variables')
           .select('*')
           .eq('ConflictRisk', 'High')
-          .limit(5);
+          .limit(5) as { data: CountryData[] | null; error: SupabaseError | null };
         
         if (error) {
           console.error('❌ Supabase error:', error);
@@ -310,7 +338,7 @@ export default function App() {
           .from('All_Variables')
           .select('*')
           .order('MostFrequentDisasterNumber', { ascending: false })
-          .limit(5);
+          .limit(5) as { data: CountryData[] | null; error: SupabaseError | null };
         
         if (error) {
           console.error('❌ Supabase error:', error);
@@ -336,7 +364,7 @@ export default function App() {
           .from('All_Variables')
           .select('*')
           .order('Poverty', { ascending: false })
-          .limit(5);
+          .limit(5) as { data: CountryData[] | null; error: SupabaseError | null };
         
         if (error) {
           console.error('❌ Supabase error:', error);
@@ -361,7 +389,7 @@ export default function App() {
         .from('All_Variables')
         .select('*')
         .or(`Country.ilike.%${query}%,ISO.ilike.%${query}%`)
-        .limit(3);
+        .limit(3) as { data: CountryData[] | null; error: SupabaseError | null };
 
       console.log('🔍 Supabase response:', { data, error });
 
@@ -468,7 +496,7 @@ export default function App() {
         setMessages(prev => 
           prev.map((msg, index) => 
             index === prev.length - 1 
-              ? { ...msg, content: "I couldn't find specific information about that in my database or Wikipedia. Please try asking about a specific country, or ask about general topics like 'population', 'drought', 'conflict', 'disasters', or 'poverty'." }
+              ? { ...msg, content: `I couldn't find specific information about that in my database or Wikipedia. Please try asking about a specific country, or ask about general topics like 'population', 'drought', 'conflict', 'disasters', or 'poverty'.` }
               : msg
           )
         );
@@ -607,7 +635,7 @@ export default function App() {
                 Your Supabase credentials are properly configured and working.
               </p>
               <p className="text-sm text-green-200 mt-2">
-                <strong>Data Sources:</strong> This app uses your "All_Variables" table and Wikipedia for comprehensive information.
+                <strong>Data Sources:</strong> This app uses your &ldquo;All_Variables&rdquo; table and Wikipedia for comprehensive information.
               </p>
             </div>
           </div>
