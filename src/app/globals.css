@@ -1,8 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0f0f23;
+  --foreground: #ffffff;
+  --card-bg: #1a1a2e;
+  --card-border: #2d2d44;
+  --input-bg: #1a1a2e;
+  --input-border: #2d2d44;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
 }
 
 @theme inline {
@@ -12,15 +21,132 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Custom scrollbar for dark theme */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* Smooth animations */
+@keyframes slide-in-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: slide-in-from-bottom 0.3s ease-out forwards;
+}
+
+/* Message hover effects */
+.message-bubble {
+  transition: all 0.2s ease-in-out;
+}
+
+.message-bubble:hover {
+  transform: translateY(-1px);
+}
+
+/* Input focus effects */
+.input-focus {
+  transition: all 0.2s ease-in-out;
+}
+
+.input-focus:focus {
+  transform: scale(1.01);
+}
+
+/* Button hover effects */
+.btn-hover {
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-hover:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+/* Typography improvements */
+.prose {
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.prose p {
+  margin-bottom: 0.5em;
+  color: var(--text-primary);
+}
+
+.prose strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Loading animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Dark theme specific styles */
+.dark-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-primary);
+}
+
+.dark-input {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-primary);
+}
+
+.dark-input::placeholder {
+  color: var(--text-muted);
+}
+
+.dark-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Ensure text is always visible */
+* {
+  color-scheme: dark;
 }
